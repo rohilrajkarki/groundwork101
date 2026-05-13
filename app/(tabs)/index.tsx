@@ -5,8 +5,14 @@ export default function Index() {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>
-        Home screen
-        <CustomCard />
+        {/* Home screen */}
+        <CustomCard
+          title="Work Shift"
+          start="6:00 AM"
+          end="1:45 PM"
+          // hours="8h"
+          location="Aegis"
+        />
       </Text>
     </View>
   );
