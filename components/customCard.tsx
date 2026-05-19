@@ -1,10 +1,16 @@
+import { workData } from "@/constants/data";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-const CustomCard = ({ title, start, end, location }) => {
-  const calculateHours = (start, end) => {
-    const parseTime = (time) => {
+const CustomCard = ({
+  title,
+  start,
+  end,
+  location,
+}: (typeof workData)[number]) => {
+  const calculateHours = (start: string, end: string) => {
+    const parseTime = (time: string) => {
       const [t, modifier] = time.split(" ");
       let [hours, minutes] = t.split(":").map(Number);
 
@@ -58,7 +64,7 @@ export default CustomCard;
 const styles = StyleSheet.create({
   card: {
     flexDirection: "row",
-    backgroundColor: "#fff",
+    backgroundColor: "#E0E0E0",
     borderRadius: 16,
     margin: 16,
     padding: 14,
