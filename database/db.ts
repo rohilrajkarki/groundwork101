@@ -15,19 +15,51 @@ const db = SQLite.openDatabaseSync("schedule.db");
 
 // Initialize DB + table
 export const initDatabase = async () => {
-  await db.execAsync(`
-    CREATE TABLE IF NOT EXISTS shifts (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      location TEXT NOT NULL,
-      rate REAL NOT NULL,
-      start TEXT NOT NULL,
-      end TEXT NOT NULL,
-      shiftDate TEXT,
-      notes TEXT,
-      createdAt TEXT DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
+  try {
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS shifts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        location TEXT NOT NULL,
+        rate REAL NOT NULL,
+        start TEXT NOT NULL,
+        end TEXT NOT NULL
+      );
+    `);
+
+    // add new columns safely for migration( Alter Table)
+    await db
+      .execAsync(
+        `
+      ALTER TABLE shifts
+      ADD COLUMN shiftDate TEXT;
+    `,
+      )
+      .catch(() => {});
+
+    await db
+      .execAsync(
+        `
+      ALTER TABLE shifts
+      ADD COLUMN notes TEXT;
+    `,
+      )
+      .catch(() => {});
+
+    await db
+      .execAsync(
+        `
+      ALTER TABLE shifts
+      ADD COLUMN createdAt TEXT
+      DEFAULT CURRENT_TIMESTAMP;
+    `,
+      )
+      .catch(() => {});
+
+    console.log("Database initialized");
+  } catch (error) {
+    console.log("DB init error:", error);
+  }
 };
 
 // CREATE
