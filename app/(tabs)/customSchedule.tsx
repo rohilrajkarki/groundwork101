@@ -1,5 +1,18 @@
+import CustomButton from "@/components/customButton";
+import { insertShift } from "@/database/db";
 import React, { useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 // type WorkData = {
 //   id: number;
@@ -15,106 +28,247 @@ import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 //   workData: WorkData[];
 // };
 
-
 // const CustomSchedule = ({ workData }: CustomScheduleProps) => {
-const CustomSchedule = ({ title = "Add Item", isFloating = false }) => {
 
-  const [showModal, setShowModal] = useState(false)
+type FormData = {
+  name: string;
+  location: string;
+  rate: number;
+  start: string;
+  end: string;
+  shiftDate: string;
+  notes: string;
+  createdAt?: string;
+};
+
+type CustomScheduleProps = {
+  title?: string;
+  isFloating?: boolean;
+};
+
+const CustomSchedule = ({
+  title = "Add Item",
+  isFloating = false,
+}: CustomScheduleProps) => {
+  const [showModal, setShowModal] = useState(false);
+
+  const [formData, setFormData] = useState<FormData>({
+    name: "",
+    location: "",
+    rate: 0,
+    start: "",
+    end: "",
+    shiftDate: "",
+    notes: "",
+  });
+
+  const handleInputChange = (field: keyof FormData, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleSave = async () => {
+    try {
+      // const payload = {
+      //   ...formData,
+      // };
+
+      await insertShift(formData);
+
+      Alert.alert("Success", "Product added successfully");
+
+      setFormData({
+        name: "",
+        location: "",
+        rate: 0,
+        start: "",
+        end: "",
+        shiftDate: "",
+        notes: "",
+      });
+    } catch (error) {
+      console.error("Insert failed:", error);
+      Alert.alert("Database Error", "Failed to save the product.");
+    }
+  };
+
   return (
+    <View
+      style={isFloating ? styles.floatingContainer : styles.inlineContainer}
+    >
+      <CustomButton title={title} onButtonPress={setShowModal} />
 
-    // <View style={styles.container}>
-    //   <FlatList
-    //     data={workData}
-    //     keyExtractor={(item) => item.id.toString()}
-    //     renderItem={({ item }) => (
-    //       <View style={styles.card}>
-    //         <Text style={styles.title}>{item.title}</Text>
-    //         <Text>Role: {item.name}</Text>
-    //         <Text>
-    //           {item.start} - {item.end}
-    //         </Text>
-    //         <Text>Location: {item.location}</Text>
-    //         <Text>Rate: ${item.rate}/hr</Text>
-    //       </View>
-    //     )}
-    //   />
-    // </View>
+      <Modal visible={showModal} animationType="slide" transparent>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+          <View style={styles.overlay}>
+            <ScrollView
+              contentContainerStyle={styles.scrollContainer}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <View style={styles.modalContainer}>
+                <Text style={styles.modalTitle}>Add Work Shift</Text>
 
-    <View style={isFloating ? styles.floatingContainer : styles.inlineContainer}>
-      <Pressable
-        onPress={() => setShowModal(true)}
-        style={({ pressed }) => [
-          styles.button,
-          pressed && styles.pressed
-        ]}
-      >
-        <Text style={styles.plusIcon}>+</Text>
-        {title && <Text style={styles.text}>{title}</Text>}
-      </Pressable>
+                <Text style={styles.label}>Name</Text>
+                <TextInput
+                  value={formData.name}
+                  onChangeText={(text) => handleInputChange("name", text)}
+                  placeholder="Enter name"
+                  style={styles.input}
+                />
 
-      {showModal &&
-        <Modal>
-          <Text>hello</Text>
-          <Pressable onPress={() => setShowModal(false)}>
-            <Text> Close Modal</Text></Pressable>
-        </Modal>
-        // <CustomCard
-        //   title="Work Shift"
-        //   start="6:00 AM"
-        //   end="1:45 PM"
-        //   // hours="8h"
-        //   location="Aegis"
-        // // key={workData}
-        // />
-      }
+                <Text style={styles.label}>Location</Text>
+                <TextInput
+                  value={formData.location}
+                  onChangeText={(text) => handleInputChange("location", text)}
+                  placeholder="Enter location"
+                  style={styles.input}
+                />
+
+                <Text style={styles.label}>Hourly Rate ($)</Text>
+                <TextInput
+                  value={formData.rate.toString()}
+                  onChangeText={(text) => handleInputChange("rate", text)}
+                  placeholder="Enter hourly rate"
+                  keyboardType="numeric"
+                  style={styles.input}
+                />
+
+                <Text style={styles.label}>Start Time</Text>
+                <TextInput
+                  value={formData.start}
+                  onChangeText={(text) => handleInputChange("start", text)}
+                  placeholder="6:00 AM"
+                  style={styles.input}
+                />
+
+                <Text style={styles.label}>End Time</Text>
+                <TextInput
+                  value={formData.end}
+                  onChangeText={(text) => handleInputChange("end", text)}
+                  placeholder="1:45 PM"
+                  style={styles.input}
+                />
+
+                <View style={styles.buttonRow}>
+                  <Pressable
+                    style={[styles.modalButton, styles.cancelButton]}
+                    onPress={() => setShowModal(false)}
+                  >
+                    <Text style={styles.buttonText}>Cancel</Text>
+                  </Pressable>
+
+                  <Pressable
+                    style={[styles.modalButton, styles.saveButton]}
+                    onPress={handleSave}
+                  >
+                    <Text style={styles.buttonText}>Save</Text>
+                  </Pressable>
+                </View>
+              </View>
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
-}
-
+};
 
 export default CustomSchedule;
 
 const styles = StyleSheet.create({
   inlineContainer: {
     marginVertical: 10,
-    alignSelf: 'center',
+    alignSelf: "center",
   },
+
   floatingContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 30,
     right: 30,
     zIndex: 1000,
-    // Shadow for iOS
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    // Shadow for Android
     elevation: 8,
   },
-  button: {
-    flexDirection: 'row',
-    backgroundColor: '#007AFF', // Modern blue
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 25, // Rounded pill shape
-    alignItems: 'center',
-    justifyContent: 'center',
+
+  overlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+    padding: 20,
   },
-  pressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.97 }], // Slight shrink effect when tapped
+
+  modalContainer: {
+    width: "90%",
+    maxWidth: 420,
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 20,
   },
-  plusIcon: {
-    color: '#FFF',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginRight: 8,
+
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 20,
+    textAlign: "center",
   },
-  text: {
-    color: '#FFF',
+
+  input: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    marginBottom: 12,
     fontSize: 16,
-    fontWeight: '600',
+  },
+
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+    gap: 10,
+  },
+
+  modalButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+
+  cancelButton: {
+    backgroundColor: "#999",
+  },
+
+  saveButton: {
+    backgroundColor: "#007AFF",
+  },
+
+  buttonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+  },
+
+  label: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 6,
+    marginLeft: 4,
   },
 });
 // const styles = StyleSheet.create({

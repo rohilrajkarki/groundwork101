@@ -47,7 +47,7 @@ const TabLayout = () => {
       <Tabs.Screen
         name="customSchedule"
         options={{
-          headerShown: false,
+          // headerShown: false,
           title: "Schedule",
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
