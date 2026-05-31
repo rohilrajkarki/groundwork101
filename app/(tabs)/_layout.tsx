@@ -44,6 +44,20 @@ const TabLayout = () => {
           ),
         }}
       />
+      <Tabs.Screen
+        name="customSchedule"
+        options={{
+          headerShown: false,
+          title: "Schedule",
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? "calendar-clear" : "calendar-clear-outline"}
+              color={color}
+              size={24}
+            />
+          ),
+        }}
+      />
     </Tabs>
   );
 };
