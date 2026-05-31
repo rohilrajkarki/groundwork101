@@ -1,18 +1,24 @@
 import CustomCard from "@/components/customCard";
-import { getAllShifts } from "@/database/db";
+import { getAllShifts, getTodaysShifts, Shift } from "@/database/db";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 
 export default function Index() {
   // const workData = [1, 2, 3];
 
-  const [workData, setWorkData] = useState<any[]>([]);
+  const [workData, setWorkData] = useState<Shift[]>([]);
+  const [todaysData, setTodaysData] = useState<Shift[]>([]);
 
   const loadShifts = async () => {
     const data = await getAllShifts();
+
+    const todaysData = await getTodaysShifts();
+    setTodaysData(todaysData);
     setWorkData(data);
-    console.log(data);
+
+    // console.log("getting shifts data:", data);
+    console.log("Todays shift:", todaysData);
   };
 
   useFocusEffect(
@@ -23,27 +29,29 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         {/* Home screen */}
 
-        {workData.map((workData) => {
-          return (
-            <CustomCard
-              title="Work Shift"
-              start="6:00 AM"
-              end="1:45 PM"
-              // hours="8h"
-              location="Aegis"
-              key={workData.id}
-            />
-          );
+        {todaysData.map((todaysData) => {
+          console.log("todaysdata here:", todaysData.id);
+          return <CustomCard {...todaysData} key={todaysData.id} />;
         })}
-      </Text>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+  },
   container: {
     flex: 1,
     backgroundColor: "#25292e",

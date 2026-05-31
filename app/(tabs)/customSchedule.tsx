@@ -1,5 +1,6 @@
 import CustomButton from "@/components/customButton";
-import { insertShift } from "@/database/db";
+import { insertShift, Shift } from "@/database/db";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useState } from "react";
 import {
   Alert,
@@ -14,32 +15,7 @@ import {
   View,
 } from "react-native";
 
-// type WorkData = {
-//   id: number;
-//   title: string;
-//   name: string;
-//   start: string;
-//   end: string;
-//   location: string;
-//   rate: number;
-// };
-
-// type CustomScheduleProps = {
-//   workData: WorkData[];
-// };
-
-// const CustomSchedule = ({ workData }: CustomScheduleProps) => {
-
-type FormData = {
-  name: string;
-  location: string;
-  rate: number;
-  start: string;
-  end: string;
-  shiftDate: string;
-  notes: string;
-  createdAt?: string;
-};
+type FormData = Omit<Shift, "id" | "createdAt">;
 
 type CustomScheduleProps = {
   title?: string;
@@ -60,25 +36,54 @@ const CustomSchedule = ({
     end: "",
     shiftDate: "",
     notes: "",
+    shiftType: "",
   });
+
+  // date + time states
+  const [shiftDate, setShiftDate] = useState(new Date());
+
+  const [startTime, setStartTime] = useState(new Date());
+
+  const [endTime, setEndTime] = useState(new Date());
+
+  // picker visibility
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const [showStartPicker, setShowStartPicker] = useState(false);
+
+  const [showEndPicker, setShowEndPicker] = useState(false);
+
+  // formatting
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  };
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString([], {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({
       ...prev,
-      [field]: value,
+      [field]: field === "rate" ? Number(value) : value,
     }));
   };
 
   const handleSave = async () => {
     try {
-      // const payload = {
-      //   ...formData,
-      // };
-
       await insertShift(formData);
 
-      Alert.alert("Success", "Product added successfully");
+      Alert.alert("Success", "Shift added successfully");
 
+      // reset form
       setFormData({
         name: "",
         location: "",
@@ -87,10 +92,14 @@ const CustomSchedule = ({
         end: "",
         shiftDate: "",
         notes: "",
+        shiftType: "",
       });
+
+      setShowModal(false);
     } catch (error) {
       console.error("Insert failed:", error);
-      Alert.alert("Database Error", "Failed to save the product.");
+
+      Alert.alert("Database Error", "Failed to save shift.");
     }
   };
 
@@ -114,7 +123,9 @@ const CustomSchedule = ({
               <View style={styles.modalContainer}>
                 <Text style={styles.modalTitle}>Add Work Shift</Text>
 
+                {/* Name */}
                 <Text style={styles.label}>Name</Text>
+
                 <TextInput
                   value={formData.name}
                   onChangeText={(text) => handleInputChange("name", text)}
@@ -122,7 +133,9 @@ const CustomSchedule = ({
                   style={styles.input}
                 />
 
+                {/* Location */}
                 <Text style={styles.label}>Location</Text>
+
                 <TextInput
                   value={formData.location}
                   onChangeText={(text) => handleInputChange("location", text)}
@@ -130,31 +143,152 @@ const CustomSchedule = ({
                   style={styles.input}
                 />
 
+                {/* Rate */}
                 <Text style={styles.label}>Hourly Rate ($)</Text>
+
                 <TextInput
-                  value={formData.rate.toString()}
+                  value={String(formData.rate)}
                   onChangeText={(text) => handleInputChange("rate", text)}
-                  placeholder="Enter hourly rate"
+                  placeholder="Enter rate"
                   keyboardType="numeric"
                   style={styles.input}
                 />
 
+                {/* Shift Date */}
+                <Text style={styles.label}>Shift Date</Text>
+
+                <Pressable
+                  style={styles.input}
+                  onPress={() => setShowDatePicker(true)}
+                >
+                  <Text>
+                    {formData.shiftDate
+                      ? formatDate(new Date(formData.shiftDate))
+                      : "Select shift date"}
+                  </Text>
+                </Pressable>
+
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={shiftDate}
+                    mode="date"
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      setShowDatePicker(false);
+
+                      if (selectedDate) {
+                        setShiftDate(selectedDate);
+
+                        setFormData((prev) => ({
+                          ...prev,
+                          shiftDate: selectedDate.toISOString(),
+                        }));
+                      }
+                    }}
+                  />
+                )}
+
+                {/* Start Time */}
                 <Text style={styles.label}>Start Time</Text>
-                <TextInput
-                  value={formData.start}
-                  onChangeText={(text) => handleInputChange("start", text)}
-                  placeholder="6:00 AM"
-                  style={styles.input}
-                />
 
+                <Pressable
+                  style={styles.input}
+                  onPress={() => setShowStartPicker(true)}
+                >
+                  <Text>
+                    {formData.start
+                      ? formatTime(new Date(formData.start))
+                      : "Select start time"}
+                  </Text>
+                </Pressable>
+
+                {showStartPicker && (
+                  <DateTimePicker
+                    value={startTime}
+                    mode="time"
+                    is24Hour={false}
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      setShowStartPicker(false);
+
+                      if (selectedDate) {
+                        const date = new Date(shiftDate);
+
+                        date.setHours(selectedDate.getHours());
+
+                        date.setMinutes(selectedDate.getMinutes());
+
+                        setStartTime(selectedDate);
+
+                        setFormData((prev) => ({
+                          ...prev,
+                          start: date.toISOString(),
+                        }));
+                      }
+                    }}
+                  />
+                )}
+
+                {/* End Time */}
                 <Text style={styles.label}>End Time</Text>
-                <TextInput
-                  value={formData.end}
-                  onChangeText={(text) => handleInputChange("end", text)}
-                  placeholder="1:45 PM"
-                  style={styles.input}
-                />
 
+                <Pressable
+                  style={styles.input}
+                  onPress={() => setShowEndPicker(true)}
+                >
+                  <Text>
+                    {formData.end
+                      ? formatTime(new Date(formData.end))
+                      : "Select end time"}
+                  </Text>
+                </Pressable>
+
+                {showEndPicker && (
+                  <DateTimePicker
+                    value={endTime}
+                    mode="time"
+                    is24Hour={false}
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      setShowEndPicker(false);
+
+                      if (selectedDate) {
+                        const date = new Date(shiftDate);
+
+                        date.setHours(selectedDate.getHours());
+
+                        date.setMinutes(selectedDate.getMinutes());
+
+                        setEndTime(selectedDate);
+
+                        setFormData((prev) => ({
+                          ...prev,
+                          end: date.toISOString(),
+                        }));
+                      }
+                    }}
+                  />
+                )}
+
+                {/* Notes */}
+                {/* <Text style={styles.label}>Notes</Text>
+
+                <TextInput
+                  value={formData.notes}
+                  onChangeText={(text) => handleInputChange("notes", text)}
+                  placeholder="Optional notes"
+                  multiline
+                  numberOfLines={3}
+                  style={[
+                    styles.input,
+                    {
+                      height: 90,
+                      textAlignVertical: "top",
+                    },
+                  ]}
+                /> */}
+
+                {/* Buttons */}
                 <View style={styles.buttonRow}>
                   <Pressable
                     style={[styles.modalButton, styles.cancelButton]}
@@ -226,13 +360,21 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     marginBottom: 12,
     fontSize: 16,
+    justifyContent: "center",
+  },
+
+  label: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 6,
+    marginLeft: 4,
   },
 
   buttonRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 10,
     gap: 10,
+    marginTop: 10,
   },
 
   modalButton: {
@@ -262,32 +404,4 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
   },
-
-  label: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 6,
-    marginLeft: 4,
-  },
 });
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: "#25292e",
-//     padding: 16,
-//   },
-
-//   card: {
-//     backgroundColor: "#fff",
-//     borderRadius: 16,
-//     padding: 16,
-//     marginBottom: 12,
-//   },
-
-//   title: {
-//     fontSize: 18,
-//     fontWeight: "bold",
-//     marginBottom: 8,
-//   },
-// });

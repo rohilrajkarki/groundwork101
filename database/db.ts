@@ -1,6 +1,7 @@
 import * as SQLite from "expo-sqlite";
 
 export type Shift = {
+  id: number;
   name: string;
   location: string;
   rate: number;
@@ -8,7 +9,8 @@ export type Shift = {
   end: string;
   shiftDate: string;
   notes: string;
-  createdAt?: string;
+  shiftType: string;
+  // createdAt?: string;
 };
 
 const db = SQLite.openDatabaseSync("schedule.db");
@@ -23,9 +25,11 @@ export const initDatabase = async () => {
         location TEXT NOT NULL,
         rate REAL NOT NULL,
         start TEXT NOT NULL,
-        end TEXT NOT NULL
-      );
-    `);
+        end TEXT NOT NULL,
+        shiftDate TEXT NOT NULL,
+        shiftType TEXT NOT NULL
+        );
+        `);
 
     // add new columns safely for migration( Alter Table)
     await db
@@ -50,11 +54,20 @@ export const initDatabase = async () => {
       .execAsync(
         `
       ALTER TABLE shifts
-      ADD COLUMN createdAt TEXT
-      DEFAULT CURRENT_TIMESTAMP;
+      ADD COLUMN shiftType TEXT;
     `,
       )
       .catch(() => {});
+
+    // await db
+    //   .execAsync(
+    //     `
+    //   ALTER TABLE shifts
+    //   ADD COLUMN createdAt TEXT
+    //   DEFAULT CURRENT_TIMESTAMP;
+    // `,
+    //   )
+    //   .catch(() => {});
 
     console.log("Database initialized");
   } catch (error) {
@@ -68,8 +81,8 @@ export const insertShift = async (shift: Shift) => {
     const result = await db.runAsync(
       `
       INSERT INTO shifts
-      (name, location, rate, start, end, shiftDate, notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      (name, location, rate, start, end, shiftDate, notes,shiftType)
+      VALUES (?, ?, ?, ?, ?, ?, ?,?)
       `,
       [
         shift.name,
@@ -79,6 +92,7 @@ export const insertShift = async (shift: Shift) => {
         shift.end,
         shift.shiftDate ?? null,
         shift.notes ?? null,
+        shift.shiftType,
       ],
     );
 
@@ -115,6 +129,28 @@ export const getShiftById = async (id: number): Promise<Shift | null> => {
   } catch (error) {
     console.log("Get shift error:", error);
     return null;
+  }
+};
+
+// READ BY DATE
+export const getTodaysShifts = async (): Promise<Shift[]> => {
+  try {
+    // today's local date (YYYY-MM-DD)
+    const today = new Date().toISOString().split("T")[0];
+
+    const result = await db.getAllAsync<Shift>(
+      `
+      SELECT * FROM shifts
+      WHERE date(shiftDate) = ?
+      ORDER BY start ASC
+      `,
+      [today],
+    );
+
+    return result;
+  } catch (error) {
+    console.log("Get today's shifts error:", error);
+    return [];
   }
 };
 

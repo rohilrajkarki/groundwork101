@@ -1,57 +1,66 @@
-import { workData } from "@/constants/data";
+import { Shift } from "@/database/db";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-const CustomCard = ({
-  title,
-  start,
-  end,
-  location,
-}: (typeof workData)[number]) => {
-  const calculateHours = (start: string, end: string) => {
-    const parseTime = (time: string) => {
-      const [t, modifier] = time.split(" ");
-      let [hours, minutes] = t.split(":").map(Number);
+const CustomCard = (workData: Shift) => {
+  const durationMs =
+    new Date(workData.end).getTime() - new Date(workData.start).getTime();
 
-      if (modifier === "PM" && hours !== 12) hours += 12;
-      if (modifier === "AM" && hours === 12) hours = 0;
+  const hours = durationMs / (1000 * 60 * 60);
 
-      return hours * 60 + minutes; // convert to minutes
-    };
+  // format time
+  const formattedStart = new Date(workData.start).toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit",
+  });
 
-    const startMinutes = parseTime(start);
-    const endMinutes = parseTime(end);
+  const formattedEnd = new Date(workData.end).toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit",
+  });
 
-    const diff = endMinutes - startMinutes;
+  // format date
+  const formattedShiftDate = new Date(workData.shiftDate).toLocaleDateString(
+    [],
+    {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    },
+  );
 
-    return `${diff / 60}h`;
-  };
-
-  const hours = calculateHours(start, end);
-
+  console.log("shift date", workData.shiftDate);
   return (
     <View style={styles.card}>
-      {/* Left accent bar */}
       <View style={styles.accent} />
 
       <View style={styles.content}>
-        {/* Header */}
-        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.title}>{workData.name}</Text>
 
-        {/* Time Row */}
+        {/* Shift Date */}
+        <View style={styles.row}>
+          <Ionicons name="calendar-outline" size={16} color="#555" />
+
+          <Text style={styles.text}>{formattedShiftDate}</Text>
+        </View>
+
+        {/* Time */}
         <View style={styles.row}>
           <Ionicons name="time-outline" size={16} color="#555" />
+
           <Text style={styles.text}>
-            {start} - {end} ({hours})
+            {formattedStart} - {formattedEnd} ({hours.toFixed(2)}h)
           </Text>
         </View>
 
-        {/* Location Row */}
+        {/* Location */}
         <View style={styles.row}>
           <Ionicons name="location-outline" size={16} color="#555" />
+
           <Text style={styles.text} numberOfLines={1}>
-            {location}
+            {workData.location}
           </Text>
         </View>
       </View>
@@ -70,7 +79,10 @@ const styles = StyleSheet.create({
     padding: 14,
 
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
@@ -79,7 +91,7 @@ const styles = StyleSheet.create({
   accent: {
     width: 6,
     borderRadius: 6,
-    backgroundColor: "#4285F4", // Google blue style
+    backgroundColor: "#4285F4",
     marginRight: 12,
   },
 
