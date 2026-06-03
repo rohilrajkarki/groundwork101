@@ -1,4 +1,3 @@
-import CustomCalendar from "@/components/customCalendar";
 import { getAllShifts, insertShift, Shift } from "@/database/db";
 import React, { useEffect, useState } from "react";
 import {
@@ -247,9 +246,15 @@ export default function CalendarScreen() {
     : null;
 
   return (
-    <View style={styles.container}>
-      <CustomCalendar />
-
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{
+        paddingTop: Platform.OS === "ios" ? 56 : 24,
+        paddingHorizontal: 12,
+        paddingBottom: 40,
+      }}
+    >
+      {" "}
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.navBtn} onPress={() => changeMonth(-1)}>
@@ -262,7 +267,6 @@ export default function CalendarScreen() {
           <Text style={styles.navBtnText}>›</Text>
         </TouchableOpacity>
       </View>
-
       {/* Day labels */}
       <View style={styles.dayRow}>
         {DAYS.map((d) => (
@@ -271,7 +275,6 @@ export default function CalendarScreen() {
           </Text>
         ))}
       </View>
-
       {/* Calendar grid */}
       <View style={styles.grid}>
         {cells.map((cell, idx) => {
@@ -326,7 +329,6 @@ export default function CalendarScreen() {
           );
         })}
       </View>
-
       {/* Detail panel when a grid item is selected */}
       {selectedKey && (
         <View style={styles.detailPanel}>
@@ -351,8 +353,10 @@ export default function CalendarScreen() {
           </View>
 
           <ScrollView
-            style={styles.shiftScroll}
-            showsVerticalScrollIndicator={true}
+            style={{ flex: 1 }}
+            contentContainerStyle={{ paddingHorizontal: 16 }}
+            nestedScrollEnabled={true}
+            showsVerticalScrollIndicator
           >
             {selectedShifts.length === 0 ? (
               <Text style={styles.emptyText}>No shifts on this day.</Text>
@@ -397,7 +401,6 @@ export default function CalendarScreen() {
           </ScrollView>
         </View>
       )}
-
       {/* Add Shift Modal */}
       <Modal visible={showModal} animationType="slide" transparent>
         <KeyboardAvoidingView
@@ -498,7 +501,7 @@ export default function CalendarScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -527,7 +530,6 @@ const styles = StyleSheet.create({
     backgroundColor: C.bg,
     paddingTop: Platform.OS === "ios" ? 56 : 24,
     paddingHorizontal: 12,
-    paddingBottom: 18,
   },
 
   // Header
@@ -641,7 +643,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 0.5,
     borderColor: C.border,
-    maxHeight: 260,
+    height: 260, // use height instead of maxHeight
     overflow: "hidden",
   },
   detailHeader: {
