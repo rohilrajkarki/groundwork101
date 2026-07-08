@@ -14,11 +14,14 @@ export default function Index() {
     const data = await getAllShifts();
 
     const todaysData = await getTodaysShifts();
+    const allShifts = await getAllShifts();
+
     setTodaysData(todaysData);
     setWorkData(data);
 
     // console.log("getting shifts data:", data);
     console.log("Todays shift:", todaysData);
+    console.log("ALL shift:", allShifts);
   };
 
   useFocusEffect(

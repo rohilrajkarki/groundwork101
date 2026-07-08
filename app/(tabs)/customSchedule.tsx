@@ -1,7 +1,10 @@
 import CustomButton from "@/components/customButton";
-import { insertShift, Shift } from "@/database/db";
+import CustomCalendar from "@/components/customCalendar";
+import { getAllShifts, insertShift, Shift } from "@/database/db";
+import { generateDummyShift } from "@/database/dummyGenerator";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import React, { useState } from "react";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -103,11 +106,44 @@ const CustomSchedule = ({
     }
   };
 
+  const addDummyData = async () => {
+    try {
+      const dummyShift = generateDummyShift();
+
+      await insertShift(dummyShift);
+
+      Alert.alert("Success", "1 dummy shift added!");
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Failed to add dummy shift");
+    }
+  };
+
+  const [allShifts, setAllShifts] = useState<Shift[]>([]);
+
+  const loadShifts = async () => {
+    const allShifts = await getAllShifts();
+
+    setAllShifts(allShifts);
+
+    // console.log("getting shifts data:", data);
+    console.log("ALL shift in schedule page:", allShifts);
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadShifts();
+    }, []),
+  );
+
   return (
     <View
       style={isFloating ? styles.floatingContainer : styles.inlineContainer}
     >
-      <CustomButton title={title} onButtonPress={setShowModal} />
+      <View style={styles.buttonStyle}>
+        <CustomButton title={title} onButtonPress={setShowModal} />
+        <CustomButton title="Add Dummy Shift" onButtonPress={addDummyData} />
+      </View>
 
       <Modal visible={showModal} animationType="slide" transparent>
         <KeyboardAvoidingView
@@ -309,6 +345,7 @@ const CustomSchedule = ({
           </View>
         </KeyboardAvoidingView>
       </Modal>
+      <CustomCalendar allShifts={allShifts} />
     </View>
   );
 };
@@ -316,6 +353,11 @@ const CustomSchedule = ({
 export default CustomSchedule;
 
 const styles = StyleSheet.create({
+  buttonStyle: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 10,
+  },
   inlineContainer: {
     marginVertical: 10,
     alignSelf: "center",
