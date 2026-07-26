@@ -10,10 +10,10 @@ interface CustomCalendarProps {
 const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
   const formatDate = (date: Date) => {
     return date.toLocaleDateString([], {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
       year: "numeric",
+      month: "short",
+      // day: "numeric",
+      weekday: "short",
     });
   };
 
@@ -35,29 +35,37 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
     "December",
   ];
 
-  const currYear = new Date().getFullYear();
-  const currMonth = new Date().getMonth();
+  const [currentFullDate, setCurrentFullDate] = useState(new Date());
 
-  const [selectedMonth, setSelectedMonth] = useState(currMonth);
   const currentMonthName = new Date().toLocaleString("default", {
     month: "long",
   });
 
-  console.log(currentMonthName);
   const changeCurrMonth = (text?: string) => {
-    console.log("changemonth", text);
-    if (text === "prev") {
-      setSelectedMonth((prev) => prev - 1);
-    } else if (text === "next") {
-      setSelectedMonth((prev) => prev + 1);
-    }
-
-    if (selectedMonth <= 0) {
-      setSelectedMonth(11);
-    } else if (selectedMonth >= 11) {
-      setSelectedMonth(0);
+    if (text === "next") {
+      setCurrentFullDate((prev) => {
+        const d = new Date(prev);
+        d.setMonth(d.getMonth() + 1);
+        return d;
+      });
+    } else if (text === "prev") {
+      setCurrentFullDate((prev) => {
+        const d = new Date(prev);
+        d.setMonth(d.getMonth() - 1);
+        return d;
+      });
     }
   };
+
+  const changeMonth = currentFullDate.getMonth();
+  const changeYear = currentFullDate.getFullYear();
+  const today = currentFullDate.getDay();
+  const numberOfDays = new Date(2026, 1);
+  console.log(
+    formatDate(currentFullDate),
+    "number of days in month=>",
+    numberOfDays,
+  );
   return (
     <ScrollView
       contentContainerStyle={styles.calendarListContainer}
@@ -67,8 +75,11 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
         <CustomButton title="<" onButtonPress={() => changeCurrMonth("prev")} />
 
         <View style={styles.titleContainer}>
-          <Text style={styles.monthText}>{monthNames[selectedMonth]}</Text>
-          <Text style={styles.yearText}>{currYear}</Text>
+          <Text style={styles.monthText}>
+            {monthNames[changeMonth]}
+            Days:{today}
+          </Text>
+          <Text style={styles.yearText}>{changeYear}</Text>
         </View>
 
         <CustomButton title=">" onButtonPress={() => changeCurrMonth("next")} />
@@ -83,6 +94,7 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
       {numbers.map((num) => (
         <View key={num} style={styles.daysBox}>
           <Text style={styles.dayText}>{currentMonthName}</Text>
+          <Text style={styles.dayText}></Text>
         </View>
       ))}
       {/* <ScrollView
