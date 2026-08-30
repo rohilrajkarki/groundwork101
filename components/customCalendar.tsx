@@ -1,6 +1,13 @@
 import { Shift } from "@/database/db";
 import { useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import CustomButton from "./customButton";
 
 interface CustomCalendarProps {
@@ -14,11 +21,11 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
       month: "short",
       // day: "numeric",
       weekday: "short",
+      dayPeriod: "long",
     });
   };
 
   const weekdays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-  const numbers = Array.from({ length: 30 }, (_, i) => i + 1);
 
   const monthNames = [
     "January",
@@ -37,9 +44,10 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
 
   const [currentFullDate, setCurrentFullDate] = useState(new Date());
 
-  const currentMonthName = new Date().toLocaleString("default", {
-    month: "long",
-  });
+  const [showModal, setShowModal] = useState(false);
+  // const currentMonthName = new Date().toLocaleString("default", {
+  //   month: "long",
+  // });
 
   const changeCurrMonth = (text?: string) => {
     if (text === "next") {
@@ -57,15 +65,23 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
     }
   };
 
+  const getNumberOfDays = (year: number, month: number) => {
+    return new Date(year, month + 1, 0).getDate();
+  };
+
   const changeMonth = currentFullDate.getMonth();
   const changeYear = currentFullDate.getFullYear();
-  const today = currentFullDate.getDay();
-  const numberOfDays = new Date(2026, 1);
-  console.log(
-    formatDate(currentFullDate),
-    "number of days in month=>",
-    numberOfDays,
+  const today = new Date().getDate();
+  console.log("dfdf", changeYear, changeMonth);
+
+  const numbers = Array.from(
+    { length: getNumberOfDays(changeYear, changeMonth) },
+    (_, i) => i + 1,
   );
+
+  const firstDay = new Date(changeYear, changeMonth, 1).getDay();
+
+  console.log("todayyyy=>", firstDay);
   return (
     <ScrollView
       contentContainerStyle={styles.calendarListContainer}
@@ -75,10 +91,7 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
         <CustomButton title="<" onButtonPress={() => changeCurrMonth("prev")} />
 
         <View style={styles.titleContainer}>
-          <Text style={styles.monthText}>
-            {monthNames[changeMonth]}
-            Days:{today}
-          </Text>
+          <Text style={styles.monthText}>{monthNames[changeMonth]}2</Text>
           <Text style={styles.yearText}>{changeYear}</Text>
         </View>
 
@@ -92,11 +105,69 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
         ))}
       </View>
       {numbers.map((num) => (
-        <View key={num} style={styles.daysBox}>
-          <Text style={styles.dayText}>{currentMonthName}</Text>
-          <Text style={styles.dayText}></Text>
-        </View>
+        <Pressable onPress={() => setShowModal(!showModal)} key={num}>
+          <View style={num === today ? styles.todaysBox : styles.daysBox}>
+            <Text style={styles.dayText}>{monthNames[changeMonth]}</Text>
+            <Text style={styles.dayText}>{num}</Text>
+          </View>
+        </Pressable>
       ))}
+      <Modal
+        visible={showModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            {/* Header */}
+            <View style={styles.modalHeader}>
+              <View>
+                <Text style={styles.modalTitle}>Shift Details</Text>
+                <Text style={styles.modalSubtitle}>Monday, 10 August</Text>
+              </View>
+
+              <Pressable
+                style={styles.closeButton}
+                onPress={() => setShowModal(false)}
+              >
+                <Text style={styles.closeText}>✕</Text>
+              </Pressable>
+            </View>
+
+            {/* Shift information */}
+            <View style={styles.detailsContainer}>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>📍 Location</Text>
+                <Text style={styles.detailValue}>Aegis Aged Care</Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>🕐 Time</Text>
+                <Text style={styles.detailValue}>9:00 AM - 5:00 PM</Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>💰 Rate</Text>
+                <Text style={styles.detailValue}>$32 / hour</Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>📋 Shift Type</Text>
+                <Text style={styles.detailValue}>Day Shift</Text>
+              </View>
+            </View>
+
+            {/* Close button */}
+            <Pressable
+              style={styles.doneButton}
+              onPress={() => setShowModal(false)}
+            >
+              <Text style={styles.doneButtonText}>Close</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
       {/* <ScrollView
         contentContainerStyle={styles.calendarListContainer}
         showsVerticalScrollIndicator={true}
@@ -122,7 +193,12 @@ const styles = StyleSheet.create({
   daysBox: {
     width: 50,
     height: 100,
-    backgroundColor: "green",
+    backgroundColor: "#BDBDBD",
+  },
+  todaysBox: {
+    width: 50,
+    height: 100,
+    backgroundColor: "grey",
   },
 
   monthHeader: {
@@ -164,7 +240,7 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 12,
     padding: 12,
-    backgroundColor: "red",
+    // backgroundColor: "red",
   },
   box: {
     width: "48%",
@@ -173,5 +249,90 @@ const styles = StyleSheet.create({
     borderColor: "#e0e0e0",
     backgroundColor: "#fff",
     padding: 12,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+
+  modalContainer: {
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: 35,
+  },
+
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 25,
+  },
+
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#222222",
+  },
+
+  modalSubtitle: {
+    fontSize: 14,
+    color: "#777777",
+    marginTop: 5,
+  },
+
+  closeButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#F2F2F2",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  closeText: {
+    fontSize: 16,
+    color: "#555555",
+  },
+
+  detailsContainer: {
+    backgroundColor: "#F7F7F7",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 25,
+  },
+
+  detailRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 12,
+  },
+
+  detailLabel: {
+    fontSize: 15,
+    color: "#666666",
+  },
+
+  detailValue: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#222222",
+  },
+
+  doneButton: {
+    backgroundColor: "#222222",
+    borderRadius: 14,
+    paddingVertical: 15,
+    alignItems: "center",
+  },
+
+  doneButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
