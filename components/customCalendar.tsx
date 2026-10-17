@@ -15,15 +15,15 @@ interface CustomCalendarProps {
 }
 
 const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString([], {
-      year: "numeric",
-      month: "short",
-      // day: "numeric",
-      weekday: "short",
-      dayPeriod: "long",
-    });
-  };
+  // const formatDate = (date: Date) => {
+  //   return date.toLocaleDateString([], {
+  //     year: "numeric",
+  //     month: "short",
+  //     // day: "numeric",
+  //     weekday: "short",
+  //     dayPeriod: "long",
+  //   });
+  // };
 
   const weekdays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
@@ -87,31 +87,50 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
       contentContainerStyle={styles.calendarListContainer}
       showsVerticalScrollIndicator={true}
     >
+      {/* Month header */}
       <View style={styles.monthHeader}>
         <CustomButton title="<" onButtonPress={() => changeCurrMonth("prev")} />
 
         <View style={styles.titleContainer}>
-          <Text style={styles.monthText}>{monthNames[changeMonth]}2</Text>
+          <Text style={styles.monthText}>{monthNames[changeMonth]}</Text>
           <Text style={styles.yearText}>{changeYear}</Text>
         </View>
 
         <CustomButton title=">" onButtonPress={() => changeCurrMonth("next")} />
       </View>
-      <View style={styles.weekDays}>
-        {weekdays.map((day) => (
-          <Text key={day} style={styles.dayText}>
-            {day}
-          </Text>
-        ))}
+
+      {/* Calendar */}
+      <View style={styles.calanderGrid}>
+        {/* Weekday headings */}
+        <View style={styles.weekDays}>
+          {weekdays.map((day) => (
+            <View key={day} style={styles.calendarCell}>
+              <Text style={styles.weekdayText}>{day}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Date boxes */}
+        <View style={styles.daysGrid}>
+          {numbers.map((num) => (
+            <Pressable
+              key={num}
+              style={styles.calendarCell}
+              onPress={() => setShowModal(true)}
+            >
+              <View
+                style={[
+                  styles.daysBox,
+                  num === today && { backgroundColor: "grey" },
+                ]}
+              >
+                <Text style={styles.dateText}>{num}</Text>
+              </View>
+            </Pressable>
+          ))}
+        </View>
       </View>
-      {numbers.map((num) => (
-        <Pressable onPress={() => setShowModal(!showModal)} key={num}>
-          <View style={num === today ? styles.todaysBox : styles.daysBox}>
-            <Text style={styles.dayText}>{monthNames[changeMonth]}</Text>
-            <Text style={styles.dayText}>{num}</Text>
-          </View>
-        </Pressable>
-      ))}
+
       <Modal
         visible={showModal}
         transparent
@@ -168,17 +187,6 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
           </View>
         </View>
       </Modal>
-      {/* <ScrollView
-        contentContainerStyle={styles.calendarListContainer}
-        showsVerticalScrollIndicator={true}
-      >
-        {allShifts.map((shiftData) => (
-          <View key={shiftData.id} style={styles.box}>
-            <Text>{shiftData.name}</Text>
-            <Text>{formatDate(new Date(shiftData.shiftDate))}</Text>
-          </View>
-        ))}
-      </ScrollView> */}
     </ScrollView>
   );
 };
@@ -186,19 +194,62 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
 export default CustomCalendar;
 
 const styles = StyleSheet.create({
+  // const styles = StyleSheet.create({
+  calendarListContainer: {
+    padding: 12,
+    gap: 12,
+  },
+
+  calanderGrid: {
+    width: "100%",
+  },
+
   weekDays: {
     flexDirection: "row",
     width: "100%",
+    marginBottom: 6,
   },
+
+  daysGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    width: "100%",
+  },
+
+  // Shared by weekday headings and date cells
+  calendarCell: {
+    width: `${100 / 7}%`,
+    padding: 2,
+  },
+
+  weekdayText: {
+    textAlign: "center",
+    fontWeight: "600",
+    paddingVertical: 10,
+  },
+
+  dateText: {
+    textAlign: "center",
+    fontSize: 15,
+  },
+
   daysBox: {
-    width: 50,
-    height: 100,
+    height: 105,
+    width: "100%",
+    // aspectRatio: 1,
     backgroundColor: "#BDBDBD",
+    borderRadius: 6,
+    alignItems: "center",
+    justifyContent: "center",
   },
+
   todaysBox: {
-    width: 50,
-    height: 100,
+    width: "100%",
+    aspectRatio: 1,
     backgroundColor: "grey",
+    borderRadius: 6,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   monthHeader: {
@@ -208,6 +259,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    backgroundColor: "green",
   },
 
   titleContainer: {
@@ -224,31 +276,6 @@ const styles = StyleSheet.create({
   yearText: {
     fontSize: 14,
     color: "#555",
-  },
-
-  dayText: {
-    flex: 1,
-    textAlign: "center",
-  },
-  calanderContainer: {
-    backgroundColor: "green",
-    width: 200,
-    height: 200,
-  },
-  calendarListContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-    padding: 12,
-    // backgroundColor: "red",
-  },
-  box: {
-    width: "48%",
-    borderRadius: 12,
-    borderWidth: 0.5,
-    borderColor: "#e0e0e0",
-    backgroundColor: "#fff",
-    padding: 12,
   },
 
   modalOverlay: {

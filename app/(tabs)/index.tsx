@@ -2,7 +2,7 @@ import CustomCard from "@/components/customCard";
 import { getAllShifts, getTodaysShifts, Shift } from "@/database/db";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 export default function Index() {
   // const workData = [1, 2, 3];
@@ -37,8 +37,8 @@ export default function Index() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        <Text style={styles.text}>Index page</Text>
         {/* Home screen */}
-
         {todaysData.map((todaysData) => {
           console.log("todaysdata here:", todaysData.id);
           return <CustomCard {...todaysData} key={todaysData.id} />;

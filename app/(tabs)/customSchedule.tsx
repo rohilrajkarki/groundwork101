@@ -3,6 +3,7 @@ import CustomCalendar from "@/components/customCalendar";
 import { getAllShifts, insertShift, Shift } from "@/database/db";
 import { generateDummyShift } from "@/database/dummyGenerator";
 import DateTimePicker from "@react-native-community/datetimepicker";
+
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import {
@@ -209,7 +210,7 @@ const CustomSchedule = ({
                     value={shiftDate}
                     mode="date"
                     display="default"
-                    onChange={(event, selectedDate) => {
+                    onValueChange={(event, selectedDate) => {
                       setShowDatePicker(false);
 
                       if (selectedDate) {
@@ -244,7 +245,7 @@ const CustomSchedule = ({
                     mode="time"
                     is24Hour={false}
                     display="default"
-                    onChange={(event, selectedDate) => {
+                    onValueChange={(event, selectedDate) => {
                       setShowStartPicker(false);
 
                       if (selectedDate) {

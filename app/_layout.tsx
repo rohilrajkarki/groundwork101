@@ -4,7 +4,9 @@ import { useEffect } from "react";
 
 export default function RootLayout() {
   useEffect(() => {
-    initDatabase();
+    initDatabase().catch((error) => {
+      console.error("Database initialization failed:", error);
+    });
   }, []);
 
   return (
