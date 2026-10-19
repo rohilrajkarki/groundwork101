@@ -25,7 +25,7 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
   //   });
   // };
 
-  const weekdays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+  const weekdays = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 
   const monthNames = [
     "January",
@@ -79,7 +79,12 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
     (_, i) => i + 1,
   );
 
-  const firstDay = new Date(changeYear, changeMonth, 1).getDay();
+  //-1 to make the starting day monday for the week.
+  const firstDay = new Date(changeYear, changeMonth, 1).getDay() - 1;
+  const daysInMonth = new Date(changeYear, changeMonth + 1, 0).getDate();
+  const prevMonthDays = new Date(changeYear, changeMonth - 1, 0).getDate();
+
+  const calendarDays = [...Array(firstDay).fill(null), ...numbers];
 
   console.log("todayyyy=>", firstDay);
   return (
@@ -92,8 +97,15 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
         <CustomButton title="<" onButtonPress={() => changeCurrMonth("prev")} />
 
         <View style={styles.titleContainer}>
-          <Text style={styles.monthText}>{monthNames[changeMonth]}</Text>
-          <Text style={styles.yearText}>{changeYear}</Text>
+          <Text style={styles.monthText}>
+            {prevMonthDays}--
+            {monthNames[changeMonth]}
+            {firstDay}
+          </Text>
+          <Text style={styles.yearText}>
+            {changeYear}-----
+            {daysInMonth}
+          </Text>
         </View>
 
         <CustomButton title=">" onButtonPress={() => changeCurrMonth("next")} />
@@ -112,7 +124,7 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
 
         {/* Date boxes */}
         <View style={styles.daysGrid}>
-          {numbers.map((num) => (
+          {calendarDays.map((num) => (
             <Pressable
               key={num}
               style={styles.calendarCell}
@@ -259,7 +271,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "green",
+    // backgroundColor: "green",
   },
 
   titleContainer: {
@@ -275,7 +287,7 @@ const styles = StyleSheet.create({
 
   yearText: {
     fontSize: 14,
-    color: "#555",
+    color: "#a89c9c",
   },
 
   modalOverlay: {

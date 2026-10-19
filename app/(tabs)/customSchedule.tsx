@@ -362,6 +362,7 @@ const styles = StyleSheet.create({
   inlineContainer: {
     marginVertical: 10,
     alignSelf: "center",
+    backgroundColor: "#444141",
   },
 
   floatingContainer: {
