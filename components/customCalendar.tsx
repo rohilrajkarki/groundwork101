@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import CustomButton from "./customButton";
+import CustomCard from "./customCard";
 
 interface CustomCalendarProps {
   allShifts: Shift[];
@@ -45,6 +46,7 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
   const [currentFullDate, setCurrentFullDate] = useState(new Date());
 
   const [showModal, setShowModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(0);
   // const currentMonthName = new Date().toLocaleString("default", {
   //   month: "long",
   // });
@@ -79,14 +81,13 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
     (_, i) => i + 1,
   );
 
-  //-1 to make the starting day monday for the week.
-  const firstDay = new Date(changeYear, changeMonth, 1).getDay() - 1;
+  const firstDay = (new Date(changeYear, changeMonth, 1).getDay() + 6) % 7;
   const daysInMonth = new Date(changeYear, changeMonth + 1, 0).getDate();
   const prevMonthDays = new Date(changeYear, changeMonth - 1, 0).getDate();
 
   const calendarDays = [...Array(firstDay).fill(null), ...numbers];
 
-  console.log("todayyyy=>", firstDay);
+  // console.log("todayyyy=>", firstDay, "days=>", calendarDays);
   return (
     <ScrollView
       contentContainerStyle={styles.calendarListContainer}
@@ -124,11 +125,15 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
 
         {/* Date boxes */}
         <View style={styles.daysGrid}>
-          {calendarDays.map((num) => (
+          {calendarDays.map((num, index) => (
             <Pressable
-              key={num}
+              key={num + index}
               style={styles.calendarCell}
-              onPress={() => setShowModal(true)}
+              // onPress={() => setShowModal(true)}
+              onPress={() => {
+                setShowModal(true);
+                setSelectedDate(num);
+              }}
             >
               <View
                 style={[
@@ -136,7 +141,7 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
                   num === today && { backgroundColor: "grey" },
                 ]}
               >
-                <Text style={styles.dateText}>{num}</Text>
+                {num !== null && <Text style={styles.dateText}>{num}</Text>}
               </View>
             </Pressable>
           ))}
@@ -151,8 +156,23 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
+            {allShifts
+              .filter((shift) => {
+                console.log("selecteddate==>", shift.shiftDate, selectedDate);
+                const shiftDate = new Date(shift.shiftDate);
+                return (
+                  shiftDate.getDate() === selectedDate &&
+                  shiftDate.getMonth() === changeMonth &&
+                  shiftDate.getFullYear() === changeYear
+                );
+              })
+              .map((shift) => {
+                return <CustomCard {...shift} key={shift.id} />;
+              })}
+
             {/* Header */}
-            <View style={styles.modalHeader}>
+            {/* return <CustomCard {...selectedDate} key={selectedDate.id} />; */}
+            {/* <View style={styles.modalHeader}>
               <View>
                 <Text style={styles.modalTitle}>Shift Details</Text>
                 <Text style={styles.modalSubtitle}>Monday, 10 August</Text>
@@ -164,10 +184,9 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
               >
                 <Text style={styles.closeText}>✕</Text>
               </Pressable>
-            </View>
-
+            </View> */}
             {/* Shift information */}
-            <View style={styles.detailsContainer}>
+            {/* <View style={styles.detailsContainer}>
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>📍 Location</Text>
                 <Text style={styles.detailValue}>Aegis Aged Care</Text>
@@ -187,8 +206,7 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
                 <Text style={styles.detailLabel}>📋 Shift Type</Text>
                 <Text style={styles.detailValue}>Day Shift</Text>
               </View>
-            </View>
-
+            </View> */}
             {/* Close button */}
             <Pressable
               style={styles.doneButton}
