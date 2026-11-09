@@ -18,10 +18,6 @@ export default function Index() {
 
     setTodaysData(todaysData);
     setWorkData(data);
-
-    // console.log("getting shifts data:", data);
-    console.log("Todays shift:", todaysData);
-    console.log("ALL shift:", allShifts);
   };
 
   useFocusEffect(
@@ -40,7 +36,6 @@ export default function Index() {
         <Text style={styles.text}>Index page</Text>
         {/* Home screen */}
         {todaysData.map((todaysData) => {
-          console.log("todaysdata here:", todaysData.id);
           return <CustomCard {...todaysData} key={todaysData.id} />;
         })}
       </ScrollView>

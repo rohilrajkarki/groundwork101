@@ -1,25 +1,9 @@
+import { formattedStartEnd, totalHoursCount } from "@/common/common";
 import { Shift } from "@/database/db";
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 const CustomCard = (workData: Shift) => {
-  const durationMs =
-    new Date(workData.end).getTime() - new Date(workData.start).getTime();
-
-  const hours = durationMs / (1000 * 60 * 60);
-
-  // format time
-  const formattedStart = new Date(workData.start).toLocaleTimeString([], {
-    hour: "numeric",
-    minute: "2-digit",
-  });
-
-  const formattedEnd = new Date(workData.end).toLocaleTimeString([], {
-    hour: "numeric",
-    minute: "2-digit",
-  });
-
   // format date
   const formattedShiftDate = new Date(workData.shiftDate).toLocaleDateString(
     [],
@@ -51,7 +35,8 @@ const CustomCard = (workData: Shift) => {
           <Ionicons name="time-outline" size={16} color="#555" />
 
           <Text style={styles.text}>
-            {formattedStart} - {formattedEnd} ({hours.toFixed(2)}h)
+            {formattedStartEnd(workData.start)} -
+            {formattedStartEnd(workData.end)} ({totalHoursCount(workData)}h)
           </Text>
         </View>
 

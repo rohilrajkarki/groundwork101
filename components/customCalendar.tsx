@@ -1,3 +1,4 @@
+import { formattedStartEnd } from "@/common/common";
 import { Shift } from "@/database/db";
 import { useState } from "react";
 import {
@@ -74,7 +75,6 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
   const changeMonth = currentFullDate.getMonth();
   const changeYear = currentFullDate.getFullYear();
   const today = new Date().getDate();
-  console.log("dfdf", changeYear, changeMonth);
 
   const numbers = Array.from(
     { length: getNumberOfDays(changeYear, changeMonth) },
@@ -87,7 +87,6 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
 
   const calendarDays = [...Array(firstDay).fill(null), ...numbers];
 
-  // console.log("todayyyy=>", firstDay, "days=>", calendarDays);
   return (
     <ScrollView
       contentContainerStyle={styles.calendarListContainer}
@@ -141,7 +140,33 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
                   num === today && { backgroundColor: "grey" },
                 ]}
               >
-                {num !== null && <Text style={styles.dateText}>{num}</Text>}
+                <View>
+                  {num !== null && <Text style={styles.dateText}>{num}</Text>}
+                </View>
+                <View>
+                  {allShifts
+                    .filter((shift) => {
+                      const shiftDate = new Date(shift.shiftDate);
+                      return (
+                        shiftDate.getDate() === num &&
+                        shiftDate.getMonth() === changeMonth &&
+                        shiftDate.getFullYear() === changeYear
+                      );
+                    })
+                    .map((shift) => {
+                      return (
+                        <View style={styles.eventChips} key={shift.id}>
+                          {/* <Text style={styles.eventText}>{shift.name}</Text> */}
+                          <Text style={styles.eventText}>
+                            {formattedStartEnd(shift.start)}
+                          </Text>
+                          <Text style={styles.eventText}>
+                            {formattedStartEnd(shift.end)}
+                          </Text>
+                        </View>
+                      );
+                    })}
+                </View>
               </View>
             </Pressable>
           ))}
@@ -158,7 +183,6 @@ const CustomCalendar = ({ allShifts }: CustomCalendarProps) => {
           <View style={styles.modalContainer}>
             {allShifts
               .filter((shift) => {
-                console.log("selecteddate==>", shift.shiftDate, selectedDate);
                 const shiftDate = new Date(shift.shiftDate);
                 return (
                   shiftDate.getDate() === selectedDate &&
@@ -256,18 +280,20 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "600",
     paddingVertical: 10,
+    color: "white",
   },
 
   dateText: {
     textAlign: "center",
     fontSize: 15,
+    color: "white",
   },
 
   daysBox: {
     height: 105,
     width: "100%",
     // aspectRatio: 1,
-    backgroundColor: "#BDBDBD",
+    backgroundColor: "#1C1C1E",
     borderRadius: 6,
     alignItems: "center",
     justifyContent: "center",
@@ -301,6 +327,7 @@ const styles = StyleSheet.create({
   monthText: {
     fontSize: 18,
     fontWeight: "700",
+    color: "white",
   },
 
   yearText: {
@@ -391,5 +418,31 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
+  },
+
+  // eventChips: {
+  //   backgroundColor: "#004D26",
+  //   margin: 2,
+  //   borderRadius: 4,
+  //   height: 20,
+  // },
+  // eventText: {
+  //   color: "4AF2A1",
+  // },
+  eventChips: {
+    width: "100%",
+    backgroundColor: "#004D26",
+    borderRadius: 4,
+    paddingHorizontal: 3,
+    paddingVertical: 4,
+    marginBottom: 3,
+    minWidth: 0,
+  },
+
+  eventText: {
+    color: "#FFFFFF",
+    fontSize: 10,
+    lineHeight: 14,
+    flexShrink: 1,
   },
 });

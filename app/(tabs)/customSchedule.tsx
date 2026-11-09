@@ -81,6 +81,19 @@ const CustomSchedule = ({
     }));
   };
 
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      location: "",
+      rate: 0,
+      start: "",
+      end: "",
+      shiftDate: "",
+      notes: "",
+      shiftType: "",
+    });
+  };
+
   const handleSave = async () => {
     try {
       await insertShift(formData);
@@ -187,7 +200,8 @@ const CustomSchedule = ({
                   value={String(formData.rate)}
                   onChangeText={(text) => handleInputChange("rate", text)}
                   placeholder="Enter rate"
-                  keyboardType="numeric"
+                  // inputMode="numeric"
+                  keyboardType="decimal-pad"
                   style={styles.input}
                 />
 
@@ -286,7 +300,7 @@ const CustomSchedule = ({
                     mode="time"
                     is24Hour={false}
                     display="default"
-                    onChange={(event, selectedDate) => {
+                    onValueChange={(event, selectedDate) => {
                       setShowEndPicker(false);
 
                       if (selectedDate) {
@@ -329,7 +343,10 @@ const CustomSchedule = ({
                 <View style={styles.buttonRow}>
                   <Pressable
                     style={[styles.modalButton, styles.cancelButton]}
-                    onPress={() => setShowModal(false)}
+                    onPress={() => {
+                      setShowModal(false);
+                      resetForm();
+                    }}
                   >
                     <Text style={styles.buttonText}>Cancel</Text>
                   </Pressable>
@@ -362,7 +379,7 @@ const styles = StyleSheet.create({
   inlineContainer: {
     marginVertical: 10,
     alignSelf: "center",
-    backgroundColor: "#444141",
+    backgroundColor: "#121212",
   },
 
   floatingContainer: {
@@ -377,7 +394,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "#121212",
     padding: 20,
   },
 
